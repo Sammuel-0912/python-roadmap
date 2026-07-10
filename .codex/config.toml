@@ -1,0 +1,10 @@
+﻿model = "gpt-5.4-mini"
+model_reasoning_effort = "medium"
+approvals_reviewer = "user"
+
+# Project-local Codex settings only.
+# Machine-specific paths and plugin caches stay in C:\Users\sam60\.codex\config.toml
+
+[mcp_servers.github]
+command = "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
+args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\sam60\\python-roadmap\\.codex\\start-github-mcp.ps1"]
