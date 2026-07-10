@@ -1,9 +1,10 @@
+from pathlib import Path
 import asyncio
-from fastapi import FastAPI, Query
-from bs4 import BeautifulSoup
+
 import httpx
 import pandas as pd
-from pathlib import Path
+from bs4 import BeautifulSoup
+from fastapi import FastAPI, Query
 
 app = FastAPI(title="資料科學起步走", version="2.0")
 
@@ -18,6 +19,18 @@ async def fetch_page(client: httpx.AsyncClient, page_num: int) -> str:
     except Exception as e:
         print(f"錯誤 (頁數 {page_num}): {e}")
         return ""
+
+
+async def scrape_quotes(start_page: int, end_page: int) -> list[dict]:
+    """抓取指定頁數範圍內的名言資料。"""
+    async with httpx.AsyncClient() as client:
+        tasks = [fetch_page(client, page) for page in range(start_page, end_page + 1)]
+        page_html = await asyncio.gather(*tasks)
+
+    raw_data = []
+    for html in page_html:
+        raw_data.extend(parse_quotes(html))
+    return raw_data
 
 
 def parse_quotes(html_content: str) -> list[dict]:
@@ -48,13 +61,7 @@ async def save_quotes_to_csv(
         return {"error": "結束頁數不能小於開始頁數"}
 
     # 1. 非同步爬取資料
-    async with httpx.AsyncClient() as client:
-        tasks = [fetch_page(client, page) for page in range(start_page, end_page + 1)]
-        page_html = await asyncio.gather(*tasks)
-
-        raw_data = []
-        for html in page_html:
-            raw_data.extend(parse_quotes(html))
+    raw_data = await scrape_quotes(start_page, end_page)
 
     if not raw_data:
         return {"status": "失敗", "message": "為爬取到任何資料"}
@@ -67,17 +74,17 @@ async def save_quotes_to_csv(
     # 技巧 A: 新增一個欄位，計算每條名言有幾個標籤
     df["tag_count"] = df["tags"].apply(len)
     # 技巧 B: 因為 CSV 不適合存 Python 串列 (List)，我們把 ['life', 'love'] 轉成 "life, love" 字串
-    df["tags"] = df["tags"].apply(lambda x: " , ".join(x))
+    df["tags"] = df["tags"].apply(lambda x: ", ".join(x))
 
     # 4. 儲存成csv檔案
-    outout_path = Path("quotes.json_cleaned.csv")
+    output_path = Path("quotes.json_cleaned.csv")
     df.to_csv(
-        outout_path, index=False, encoding="utf-8-sig"
+        output_path, index=False, encoding="utf-8-sig"
     )  # utf-8-sig 確保 Excel 打開不會亂碼
 
     return {
         "status": "成功",
-        "message": f"資料已成功清洗並儲存至{outout_path.resolve()}",
+        "message": f"資料已成功清洗並儲存至{output_path.resolve()}",
         "data_summary": {
             "total_rows": len(df),
             "columns": list(df.columns),

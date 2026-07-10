@@ -1,4 +1,5 @@
 from pathlib import Path
+
 import pandas as pd
 from transformers import pipeline
 
@@ -29,11 +30,11 @@ def analyze_sentiment_with_ai(df: pd.DataFrame) -> pd.DataFrame:
 
     # 解析預測結果，拆分出「標籤」與「信心分數」
     sentiment_labels = [pred["label"] for pred in predictions]
-    setiment_scores = [pred["score"] for pred in predictions]
+    sentiment_scores = [pred["score"] for pred in predictions]
 
     # 將分析結果加回 DataFrame 中
     df["ai_sentiment"] = sentiment_labels
-    df["ai_score"] = setiment_scores
+    df["ai_score"] = sentiment_scores
 
     return df
 
