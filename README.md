@@ -32,6 +32,11 @@ Run sentiment analysis:
 .\.venv\Scripts\python.exe ai_analysis.py
 ```
 
+Run the built-in style checker:
+```powershell
+.\.venv\Scripts\python.exe style_check.py
+```
+
 ## Outputs
 - `quotes.json_cleaned.csv`
 - `quotes_with_ai.csv`
@@ -41,3 +46,4 @@ Run sentiment analysis:
 ## Notes
 - Generated files are written to the repository root.
 - On Windows, `analyze.py` uses `matplotlib` in headless mode so charts can render without a GUI.
+- `style_check.py` is a zero-dependency checker that flags syntax errors, tabs, trailing whitespace, and long lines.
